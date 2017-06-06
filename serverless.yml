@@ -1,0 +1,93 @@
+service: person
+
+package:
+  exclude:
+    - src/**
+    - node_modules/@types
+    - node_modules/typescript
+
+provider:
+  name: aws
+  runtime: nodejs6.10
+  environment:
+    DYNAMODB_TABLE: ${self:service}-${opt:stage, self:provider.stage}
+    STAGE: ${opt:stage, self:provider.stage}
+    COGNITO_POOL: eu-central-1_20qZMtjpi
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}"
+  region: eu-central-1
+
+functions:
+  create:
+    handler: lib/people/create.create
+    events:
+      - http:
+          path: /
+          method: post
+          cors: true
+          authorizer:
+            arn: arn:aws:cognito-idp:eu-central-1:271952345563:userpool/${self:provider.environment.COGNITO_POOL}
+  list:
+    handler: lib/people/list.list
+    events:
+      - http:
+          path: /
+          method: get
+          cors: true
+          authorizer:
+            arn: arn:aws:cognito-idp:eu-central-1:271952345563:userpool/${self:provider.environment.COGNITO_POOL}  
+  get:
+    handler: lib/people/get.get
+    events:
+      - http:
+          path: /{id}
+          method: get
+          cors: true
+          authorizer:
+            arn: arn:aws:cognito-idp:eu-central-1:271952345563:userpool/${self:provider.environment.COGNITO_POOL}
+  update:
+    handler: lib/people/update.update
+    events:
+      - http:
+          path: /{id}
+          method: put
+          cors: true
+          authorizer:
+            arn: arn:aws:cognito-idp:eu-central-1:271952345563:userpool/${self:provider.environment.COGNITO_POOL}
+  delete:
+    handler: lib/people/delete.remove
+    events:
+      - http:
+          path: /{id}
+          method: delete
+          cors: true    
+          authorizer:
+            arn: arn:aws:cognito-idp:eu-central-1:271952345563:userpool/${self:provider.environment.COGNITO_POOL}
+
+resources:
+  Resources:
+    PeopleDynamoDbTable:
+      Type: 'AWS::DynamoDB::Table'
+      DeletionPolicy: Retain
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: id
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:provider.environment.DYNAMODB_TABLE}
