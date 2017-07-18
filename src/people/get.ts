@@ -9,7 +9,7 @@ const dynamoDb = new AWS.DynamoDB.DocumentClient();
 export const apiUrl = 'https://api.aws.daigeb.ch';
 
 export const get = (event: LambdaEvent<{ id: string }>, context: Context, callback: LambdaCallback) => {
-  const person = new Person(dynamoDb, event.requestContext.authorizer.claims.email);
+  const person = new Person(dynamoDb, event.requestContext.authorizer.email);
 
   person.get(event.pathParameters.id, (error, person) => {
     if (error) {
@@ -18,8 +18,11 @@ export const get = (event: LambdaEvent<{ id: string }>, context: Context, callba
       return;
     }
 
-    const response = {
+    const response: HttpResponse = {
       statusCode: 200,
+      headers: {
+        "Access-Control-Allow-Origin": "*"
+      },
       body: JSON.stringify(person)
     };
     callback(null, response);

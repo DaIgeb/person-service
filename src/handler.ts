@@ -1,0 +1,6 @@
+export { auth } from './people/authorizer'
+export { create } from './people/create'
+export { remove } from './people/delete'
+export { get } from './people/get'
+export { list } from './people/list'
+export { update } from './people/update'
