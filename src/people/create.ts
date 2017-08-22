@@ -8,7 +8,7 @@ import { isAuthorized } from './authorizer'
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
 export const create = (event: LambdaEvent<{}>, context: Context, callback: LambdaCallback) => {
-  if (!isAuthorized(event.requestContext.authorizer.roles, 'tester')) {
+  if (!isAuthorized(event.requestContext.authorizer.roles, 'Admin')) {
     const response: HttpResponse = {
       statusCode: 403,
       headers: {

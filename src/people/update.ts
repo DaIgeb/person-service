@@ -8,7 +8,7 @@ import { Person } from './Person';
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
 export const update = (event: LambdaEvent<{ id: string }>, context: Context, callback: LambdaCallback) => {
-  if (!isAuthorized(event.requestContext.authorizer.roles, 'tester')) {
+  if (!isAuthorized(event.requestContext.authorizer.roles, 'Admin')) {
     const response: HttpResponse = {
       statusCode: 403,
       headers: {
